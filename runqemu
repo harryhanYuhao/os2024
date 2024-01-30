@@ -1,0 +1,106 @@
+#!/bin/bash
+
+ROOTFS_PATH=$(find ~+ -wholename "*debian.qcow2" | tail -n 1)
+BZIMAGE_PATH=$(find ~+ -wholename "*linux*x86_64*bzImage" | tail -n 1) 
+NOTFOUND_IMG=0
+
+if [[ -z $ROOTFS_PATH ]]; then
+	echo "debian.qcow2 not found"
+	NOTFOUND_IMG=1
+fi
+
+if [[ -z $BZIMAGE_PATH ]]; then
+	echo "bzImage not found"
+	NOTFOUND_IMG=1
+fi
+
+if [[ $NOTFOUND_IMG ]]; then
+	exit 1
+fi
+
+qemu_NoPort () {
+	qemu-system-x86_64 -m 4G -smp 4 \
+		-drive file=$ROOTFS_PATH \
+	       	-kernel $BZIMAGE_PATH \
+	       	-append "root=/dev/sda1 console=ttyS0" -nographic
+}
+
+qemu_Port(){
+	randNum=$(($RANDOM % 65535))
+	if [[ -z $portNum ]]; then
+		portNum=$randNum
+	elif [[ $portNum -lt 2024 ]]; then
+		echo "you shall use a port number greater than 2024, auto-assigning port number "
+		portNum=$randNum
+	elif [[ $portNum -gt 65535 ]]; then
+		echo "Port number shall be smaller then 65535. Auto-assigning a port number"
+		portNum=$randNum
+	fi
+	
+	# get an available port 
+	while [[ -n $(lsof -i:${portNum}) ]]; do
+		echo "trying port number ${portNum} ..."
+		portNum=`expr $(($portNum + 1)) % 65535`
+	done
+	
+	
+	echo "	qemu-system-x86_64 -m 4G -smp 4 \ "
+	echo "		-drive file=$ROOTFS_PATH \ "
+	echo "	       	-kernel $BZIMAGE_PATH \ "
+	echo "	       	-append "root=/dev/sda1 console=ttyS0" -nographic \ "
+	echo "		-S -gdb tcp::${portNum} "
+
+	echo -e "port number assigned: \033[1;31m ${portNum} \033[0m"
+
+	qemu-system-x86_64 -m 4G -smp 4 \
+		-drive file=$ROOTFS_PATH \
+	       	-kernel $BZIMAGE_PATH \
+	       	-append "root=/dev/sda1 console=ttyS0" -nographic \
+		-S -gdb tcp::${portNum}
+}
+
+help () {
+	echo "NAME"
+	echo "		runqemu - a qemu shortcut"
+	echo ""
+	echo "SYNOPSIS"
+	echo "		runqemu [-g] [port number]"
+	echo ""
+	echo "DESCRIPTION"
+	echo "		runqemu is written for UoE operation system class"
+	echo "		It detects the debiam.qcow2 disk image and bzImage"
+	echo "		presented in current or child of current directory"	   
+	echo "		and correctly run the qemu command to simualte the"
+        echo "		kernel."
+	echo "		If port number is presented, it will try to use the "
+	echo "		given port number to connect to gdb."
+	echo ""
+	echo "-g: "
+	echo "		connects with gdb. Auto assign a port"		
+}
+
+################
+# Start of execution
+################
+
+if [ $# -eq 0 ]; then
+	qemu_NoPort
+fi
+
+while [ $# -gt 0 ]; do
+	case $1 in
+		-g)
+			qemu_Port
+			exit 0
+			;;
+		[0-9]*)
+			portNum=$1
+			qemu_Port
+			exit 0
+			;;
+		*)
+			help
+			exit 1
+			;;
+	esac
+done
