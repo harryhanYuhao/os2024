@@ -1,0 +1,7 @@
+PS1='\[\e[35;1m\]\u\[\e[0m\]@\[\e[94;1m\]\h\[\e[0m\]:\[\e[2m\]\w\n\[\e[0m\]\$ '
+alias ls="ls --color=auto"
+alias cddisk="cd /disk/scratch/`whoami`"
+alias c="clear"
+
+PATH="$PATH:$HOME/.local/bin"
+
