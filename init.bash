@@ -1,6 +1,12 @@
 #!/bin/bash 
 
-cp brc ~/.brc 
+echo "#############" >> ~/.brc
+echo "Copied $(data)" >> ~/.brc
+echo "#############" >> ~/.brc
+cat brc >> ~/.brc 
+echo "#############" >> ~/.brc
+echo "END OF COPY" >> ~/.brc
+echo "#############" >> ~/.brc
 
 mkdir -p ~/.local/bin/
 
