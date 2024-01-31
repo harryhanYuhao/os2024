@@ -2,7 +2,6 @@
 
 ROOTFS_PATH=$(find ~+ -wholename "*debian.qcow2" | tail -n 1)
 BZIMAGE_PATH=$(find ~+ -wholename "*linux*x86_64*bzImage" | tail -n 1) 
-NOTFOUND_IMG=0
 
 if [[ -z $ROOTFS_PATH ]]; then
 	echo "debian.qcow2 not found"

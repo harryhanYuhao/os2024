@@ -1,7 +1,7 @@
 #!/bin/bash 
 
 echo "#############" >> ~/.brc
-echo "Copied $(data)" >> ~/.brc
+echo "Copied $(date)" >> ~/.brc
 echo "#############" >> ~/.brc
 cat brc >> ~/.brc 
 echo "#############" >> ~/.brc
@@ -15,5 +15,3 @@ chmod +x ~/.local/bin/killqemu
 
 cp runqemu ~/.local/bin/runqemu
 chmod +x ~/.local/bin/runqemu
-
-source ~/.brc
