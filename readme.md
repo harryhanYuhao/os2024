@@ -17,8 +17,8 @@ git clone https://github.com/harryhanYuhao/os2024.git; cd os2024; source init.ba
 Now you should have a better terminal prompt and you can run:
 
 ```bash
-killqemu # kill the running qemu. Does not work if more than one is running
-runqemu # detects debian.qcow2 and bzImage file in current directory and run qemu simulation. 
+killqemu # kill the running qemu. Undefined behaviour if more than one qemu issued by you is running
+runqemu # detects debian.qcow2 and bzImage file in current directory, home, and `/disk/scratch`, and runs it
 cddisk # go to your /disk/scratch folder
 c # clear the terminal
 ls # colored ls
