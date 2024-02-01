@@ -1,12 +1,11 @@
 #!/bin/bash 
 
-echo "#############" >> ~/.brc
+sed '/###OS2024BEGIN/,/###OS2024END/d' ~/.brc -i
+
+echo "###OS2024BEGIN" >> ~/.brc
 echo "Copied $(date)" >> ~/.brc
-echo "#############" >> ~/.brc
 cat brc >> ~/.brc 
-echo "#############" >> ~/.brc
-echo "END OF COPY" >> ~/.brc
-echo "#############" >> ~/.brc
+echo "###OS2024END" >> ~/.brc
 
 mkdir -p ~/.local/bin/
 
