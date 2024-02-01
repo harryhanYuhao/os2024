@@ -84,7 +84,7 @@ if [[ -z $BZIMAGE_PATH ]]; then
 fi
 
 if [[ $NOTFOUND_IMG ]]; then
-	ehco "You should probably cd to /disk/scratch/<uun>?"
+	echo "You should probably cd to /disk/scratch/<uun>?"
 	exit 1
 fi
 
@@ -97,7 +97,7 @@ echo -e "${BOLD}${RED}Found: ${RESET}"
 echo "${ROOTFS_PATH}"
 echo ""
 
-echo "CONTINUE? (enter N to quit)"
+echo "CONTINUE? Press enter to Continue, N to quit"
 
 read input 
 
