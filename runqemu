@@ -1,23 +1,9 @@
 #!/bin/bash
 
-ROOTFS_PATH=$(find ~+ -wholename "*debian.qcow2" | tail -n 1)
-BZIMAGE_PATH=$(find ~+ -wholename "*linux*x86_64*bzImage" | tail -n 1) 
+BOLD="\033[1m"
+RED="\033[31m"
+RESET="\033[0m"
 
-if [[ -z $ROOTFS_PATH ]]; then
-	echo "debian.qcow2 not found"
-	NOTFOUND_IMG=1
-fi
-
-if [[ -z $BZIMAGE_PATH ]]; then
-	echo "bzImage not found"
-	NOTFOUND_IMG=1
-fi
-
-if [[ $NOTFOUND_IMG ]]; then
-	echo "This Script Can only detects rootfs and kernel image located in the current directory or child of current directory."
-	ehco "You should probably cd to /disk/scratch/<uun> ?"
-	exit 1
-fi
 
 qemu_NoPort () {
 	qemu-system-x86_64 -m 4G -smp 4 \
@@ -83,6 +69,41 @@ help () {
 ################
 # Start of execution
 ################
+
+ROOTFS_PATH=$(find ~+ ~ /disk/scratch/`whoami` -wholename "*debian.qcow2" | tail -n 1)
+BZIMAGE_PATH=$(find ~+ ~ /disk/scratch/`whoami` -wholename "*linux*x86_64*bzImage" | tail -n 1) 
+
+if [[ -z $ROOTFS_PATH ]]; then
+	echo "debian.qcow2 not found"
+	NOTFOUND_IMG=1
+fi
+
+if [[ -z $BZIMAGE_PATH ]]; then
+	echo "bzImage not found"
+	NOTFOUND_IMG=1
+fi
+
+if [[ $NOTFOUND_IMG ]]; then
+	ehco "You should probably cd to /disk/scratch/<uun>?"
+	exit 1
+fi
+
+echo ""
+echo "#######################"
+echo ""
+echo -e "${BOLD}${RED}Found: ${RESET}" 
+echo "${BZIMAGE_PATH}"
+echo -e "${BOLD}${RED}Found: ${RESET}" 
+echo "${ROOTFS_PATH}"
+echo ""
+
+echo "CONTINUE? (enter N to quit)"
+
+read input 
+
+if [[ $input == "N" ]]; then
+	exit 0
+fi
 
 if [ $# -eq 0 ]; then
 	qemu_NoPort
