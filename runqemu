@@ -15,6 +15,7 @@ fi
 
 if [[ $NOTFOUND_IMG ]]; then
 	echo "This Script Can only detects rootfs and kernel image located in the current directory or child of current directory."
+	ehco "You should probably cd to /disk/scratch/<uun> ?"
 	exit 1
 fi
 
