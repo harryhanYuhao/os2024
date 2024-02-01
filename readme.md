@@ -39,7 +39,10 @@ You will probably see a huge list as many people may be running it at the same t
 
 ###  `runqemu`
 
-runqemu detects the rootfs and kernel image and run simulation. It only expects one rootfs and kernel image to exist. 
+runqemu detects the rootfs and kernel image and run simulation. 
+It only expects one rootfs and kernel image to exist. 
+
+**Importantly**, it expectes rootfs and kernel image are located in the current directory or child of current directory.
 
 ```
 runqemu # run the simulation 
