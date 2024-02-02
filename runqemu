@@ -70,8 +70,8 @@ help () {
 # Start of execution
 ################
 
-[ -z $ROOTFS_PATH ] && ROOTFS_PATH=$(find ~ /disk/scratch/`whoami` -noleaf -path '~/Yesterday/Yesterday/*' -prune -o -name "debian.qcow2" -print | tail -n 1)
-[ -z $BZIMAGE_PATH ] && BZIMAGE_PATH=$(find ~ /disk/scratch/`whoami` -noleaf -path '~/Yesterday/Yesterday/*' -prune -o -wholename "*x86_64*bzImage" -print | tail -n 1)
+[ -z $ROOTFS_PATH ] && ROOTFS_PATH=$(find ~ /disk/scratch/`whoami` -name 'Yesterday' -prune -o -name "debian.qcow2" -print | tail -n 1)
+[ -z $BZIMAGE_PATH ] && BZIMAGE_PATH=$(find ~ /disk/scratch/`whoami` -name 'Yesterday' -prune -o -wholename "*x86_64*bzImage" -print | tail -n 1)
 
 if [[ -z $ROOTFS_PATH ]]; then
 	echo "debian.qcow2 not found"
