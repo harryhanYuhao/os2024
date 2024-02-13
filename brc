@@ -1,6 +1,6 @@
 PS1='\[\e[35;1m\]\u\[\e[0m\]@\[\e[94;1m\]\h\[\e[0m\]:\[\e[2m\]\w\n\[\e[0m\]\$ '
 alias ls="ls --color=auto"
-alias cddisk="cd /disk/scratch/`whoami`"
+alias cddisk="cd /disk/scratch/operating_systems/`whoami`"
 alias c="clear"
 alias findbz="find ~+ -wholename \"*linux*x86_64*bzImage\" -type f"
 alias finddeb="find ~+ -wholename \"*debian.qcow2\" -type f"

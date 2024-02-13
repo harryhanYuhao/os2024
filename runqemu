@@ -35,8 +35,9 @@ get_filePath() {
 		[ -f $BZIMAGE_PATH ] || unset BZIMAGE_PATH
 	fi
 
-	[ -z $ROOTFS_PATH ] && ROOTFS_PATH=$(find ~ /disk/scratch/`whoami` -name 'Yesterday' -prune -o -name "debian.qcow2" -print | tail -n 1)
-	[ -z $BZIMAGE_PATH ] && BZIMAGE_PATH=$(find ~ /disk/scratch/`whoami` -name 'Yesterday' -prune -o -wholename "*x86_64*bzImage" -print | tail -n 1)
+	[ -z $ROOTFS_PATH ] && ROOTFS_PATH=$(find ~ /disk/scratch/operating_systems/`whoami` -name 'Yesterday' -prune -o -name "debian.qcow2" -print | tail -n 1)
+	[ -z $BZIMAGE_PAH ] && BZIMAGE_PATH=$(find ~ /disk/scratch/operating_systems/`whoami` -name 'Yesterday' -prune -o -wholename "*x86_64*bzImage" -print | tail -n 1)
+	
 
 	if [[ -z $ROOTFS_PATH ]] && [[ -f $ROOTFS_PATH ]]; then
 		echo "debian.qcow2 not found"
