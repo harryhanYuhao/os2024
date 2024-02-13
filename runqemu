@@ -4,15 +4,81 @@ BOLD="\033[1m"
 RED="\033[31m"
 RESET="\033[0m"
 
+CACHEFILEPATH="$HOME/.cache/runqemuCache"
+CACHEFILEDIR="$HOME/.cache/"
+CACHE_ROOTFS_PREFIX="ROOTFS_PATH="
+CACHE_BZIMAGE_PREFIX="BZIMAGE_PATH="
+
+record_pathName() {
+	if [[ -f $CACHEFILEPATH ]]; then
+		rm $CACHEFILEPATH
+	fi
+
+	if [[ ! -d $CACHEFILEDIR ]]; then
+		mkdir -p $CACHEFILEDIR
+	fi
+
+	echo "${CACHE_ROOTFS_PREFIX}${ROOTFS_PATH}" >> $CACHEFILEPATH
+	echo "${CACHE_BZIMAGE_PREFIX}${BZIMAGE_PATH}" >> $CACHEFILEPATH
+}
+
+get_filePath() {
+	if [[ -f $CACHEFILEPATH ]] && [[ -z $NOT_USE_CACHE ]]; then
+		ROOTFS_PATH=$(cat $CACHEFILEPATH | grep $CACHE_ROOTFS_PREFIX | sed "s/^${CACHE_ROOTFS_PREFIX}//") 
+		BZIMAGE_PATH=$(cat $CACHEFILEPATH | grep $CACHE_BZIMAGE_PREFIX | sed "s/^${CACHE_BZIMAGE_PREFIX}//") 
+		echo $ROOTFS_PATH 
+		echo $BZIMAGE_PATH
+		[ -f $ROOTFS_PATH ] || unset ROOTFS_PATH
+		[ -f $BZIMAGE_PATH ] || unset BZIMAGE_PATH
+		exit 0
+	fi
+	exit 0
+
+	[ -z $ROOTFS_PATH ] && ROOTFS_PATH=$(find ~ /disk/scratch/`whoami` -name 'Yesterday' -prune -o -name "debian.qcow2" -print | tail -n 1)
+	[ -z $BZIMAGE_PATH ] && BZIMAGE_PATH=$(find ~ /disk/scratch/`whoami` -name 'Yesterday' -prune -o -wholename "*x86_64*bzImage" -print | tail -n 1)
+
+	if [[ -n $ROOTFS_PATH ]] && [[ -f $ROOTFS_PATH ]]; then
+		echo "debian.qcow2 not found"
+		NOTFOUND_IMG=1
+	fi
+
+	if [[ -n $BZIMAGE_PATH ]] && [[ -z $BZIMAGE_PATH ]]; then
+		echo "bzImage not found"
+		NOTFOUND_IMG=1
+	fi
+
+	if [[ $NOTFOUND_IMG ]]; then
+		echo "You should probably cd to /disk/scratch/<uun>?"
+		exit 1
+	fi
+
+	record_pathName
+
+	echo ""
+	echo "#######################"
+	echo ""
+	echo -e "${BOLD}${RED}Found: ${RESET}" 
+	echo "${BZIMAGE_PATH}"
+	echo -e "${BOLD}${RED}Found: ${RESET}" 
+	echo "${ROOTFS_PATH}"
+	echo ""
+	
+	echo "CONTINUE? Press enter to Continue, N to quit"
+	
+	read -r input 
+}
 
 qemu_NoPort () {
+	get_filePath	
+
 	qemu-system-x86_64 -m 4G -smp 4 \
-		-drive file=$ROOTFS_PATH \
-	       	-kernel $BZIMAGE_PATH \
+		-drive file="$ROOTFS_PATH" \
+	       	-kernel "$BZIMAGE_PATH" \
 	       	-append "root=/dev/sda1 console=ttyS0" -nographic
 }
 
 qemu_Port(){
+
 	randNum=$(($RANDOM % 65535))
 	if [[ -z $portNum ]]; then
 		portNum=$randNum
@@ -30,7 +96,8 @@ qemu_Port(){
 		portNum=`expr $(($portNum + 1)) % 65535`
 	done
 	
-	
+	get_filePath
+
 	echo "	qemu-system-x86_64 -m 4G -smp 4 \ "
 	echo "		-drive file=$ROOTFS_PATH \ "
 	echo "	       	-kernel $BZIMAGE_PATH \ "
@@ -70,36 +137,6 @@ help () {
 # Start of execution
 ################
 
-[ -z $ROOTFS_PATH ] && ROOTFS_PATH=$(find ~ /disk/scratch/`whoami` -name 'Yesterday' -prune -o -name "debian.qcow2" -print | tail -n 1)
-[ -z $BZIMAGE_PATH ] && BZIMAGE_PATH=$(find ~ /disk/scratch/`whoami` -name 'Yesterday' -prune -o -wholename "*x86_64*bzImage" -print | tail -n 1)
-
-if [[ -z $ROOTFS_PATH ]]; then
-	echo "debian.qcow2 not found"
-	NOTFOUND_IMG=1
-fi
-
-if [[ -z $BZIMAGE_PATH ]]; then
-	echo "bzImage not found"
-	NOTFOUND_IMG=1
-fi
-
-if [[ $NOTFOUND_IMG ]]; then
-	echo "You should probably cd to /disk/scratch/<uun>?"
-	exit 1
-fi
-
-echo ""
-echo "#######################"
-echo ""
-echo -e "${BOLD}${RED}Found: ${RESET}" 
-echo "${BZIMAGE_PATH}"
-echo -e "${BOLD}${RED}Found: ${RESET}" 
-echo "${ROOTFS_PATH}"
-echo ""
-
-echo "CONTINUE? Press enter to Continue, N to quit"
-
-read input 
 
 if [[ $input == "N" ]]; then
 	exit 0
@@ -111,14 +148,18 @@ fi
 
 while [ $# -gt 0 ]; do
 	case $1 in
+		-n)
+			NOT_USE_CACHE="yes"
+			shift
+			;;
 		-g)
-			qemu_Port
-			exit 0
+			RUN_QEMU_PORT="yes"
+			shift
 			;;
 		[0-9]*)
+			RUN_QEMU_PORT="yes"
 			portNum=$1
-			qemu_Port
-			exit 0
+			shift
 			;;
 		*)
 			help
@@ -126,3 +167,9 @@ while [ $# -gt 0 ]; do
 			;;
 	esac
 done
+
+if [[ -n $RUN_QEMU_PORT ]]; then
+	qemu_Port
+else 
+	qemu_NoPort
+fi
