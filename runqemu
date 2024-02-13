@@ -30,19 +30,17 @@ get_filePath() {
 		echo $BZIMAGE_PATH
 		[ -f $ROOTFS_PATH ] || unset ROOTFS_PATH
 		[ -f $BZIMAGE_PATH ] || unset BZIMAGE_PATH
-		exit 0
 	fi
-	exit 0
 
 	[ -z $ROOTFS_PATH ] && ROOTFS_PATH=$(find ~ /disk/scratch/`whoami` -name 'Yesterday' -prune -o -name "debian.qcow2" -print | tail -n 1)
 	[ -z $BZIMAGE_PATH ] && BZIMAGE_PATH=$(find ~ /disk/scratch/`whoami` -name 'Yesterday' -prune -o -wholename "*x86_64*bzImage" -print | tail -n 1)
 
-	if [[ -n $ROOTFS_PATH ]] && [[ -f $ROOTFS_PATH ]]; then
+	if [[ -z $ROOTFS_PATH ]] && [[ -f $ROOTFS_PATH ]]; then
 		echo "debian.qcow2 not found"
 		NOTFOUND_IMG=1
 	fi
 
-	if [[ -n $BZIMAGE_PATH ]] && [[ -z $BZIMAGE_PATH ]]; then
+	if [[ -z $BZIMAGE_PATH ]] && [[ -z $BZIMAGE_PATH ]]; then
 		echo "bzImage not found"
 		NOTFOUND_IMG=1
 	fi
