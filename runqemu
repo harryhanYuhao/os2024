@@ -20,14 +20,17 @@ record_pathName() {
 
 	echo "${CACHE_ROOTFS_PREFIX}${ROOTFS_PATH}" >> $CACHEFILEPATH
 	echo "${CACHE_BZIMAGE_PREFIX}${BZIMAGE_PATH}" >> $CACHEFILEPATH
+	echo "Recording filepath to $CACHEFILEPATH"
+	cat $CACHEFILEPATH
 }
 
 get_filePath() {
 	if [[ -f $CACHEFILEPATH ]] && [[ -z $NOT_USE_CACHE ]]; then
 		ROOTFS_PATH=$(cat $CACHEFILEPATH | grep $CACHE_ROOTFS_PREFIX | sed "s/^${CACHE_ROOTFS_PREFIX}//") 
 		BZIMAGE_PATH=$(cat $CACHEFILEPATH | grep $CACHE_BZIMAGE_PREFIX | sed "s/^${CACHE_BZIMAGE_PREFIX}//") 
-		echo $ROOTFS_PATH 
-		echo $BZIMAGE_PATH
+		echo "Found filepath from $CACHEFILEPATH"
+		echo "Rootfs: $ROOTFS_PATH"
+		echo "Bzimage: $BZIMAGE_PATH"
 		[ -f $ROOTFS_PATH ] || unset ROOTFS_PATH
 		[ -f $BZIMAGE_PATH ] || unset BZIMAGE_PATH
 	fi
