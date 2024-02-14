@@ -85,3 +85,21 @@ Host uoe
 ```
 
 Now you can use `ssh uoe` to connect to dice.
+
+## GDB 
+
+To debug kernel with gdb, start qemu first, connecting to a local port: 
+
+```
+qemu-system-x86_64 -m 4G -smp 4 \
+        -drive file=$ROOTFS_PATH \
+        -kernel $BZIMAGE_PATH \
+        -append "root=/dev/sda1 console=ttyS0" -nographic \
+        -S -gdb tcp::${portNum}
+```
+
+Then start gdb: 
+```
+gdb vmlinux;
+(gdb) target remote localhost:xxxxxx
+```
