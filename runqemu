@@ -68,6 +68,10 @@ get_filePath() {
 	echo "CONTINUE? Press enter to Continue, N to quit"
 	
 	read -r input 
+
+	if [[ $input == "N" ]]; then
+		exit 0
+	fi
 }
 
 qemu_NoPort () {
@@ -139,16 +143,6 @@ help () {
 # Start of execution
 ################
 
-
-if [[ $input == "N" ]]; then
-	exit 0
-fi
-
-if [ $# -eq 0 ]; then
-	qemu_NoPort
-	exit 0
-fi
-
 while [ $# -gt 0 ]; do
 	case $1 in
 		-n)
@@ -173,8 +167,6 @@ done
 
 if [[ -n $RUN_QEMU_PORT ]]; then
 	qemu_Port
-	exit 0
 else 
 	qemu_NoPort
-	exit 0
 fi
