@@ -43,13 +43,16 @@ You will probably see a huge list as many people may be running it at the same t
 
 runqemu detects the rootfs and kernel image and run simulation. 
 
-It tries to find them in you current directory, in you home directory, or in your `/disk/scratch` directory.
+It tries to find them in you current directory, home directory, `/disk/scratch/uun`, and `/disk/scratch/operation_systems/uun` directory.
+
+To avoid executing expensive `find` each time, the found bzimage and rootfs filepath will be stored in `~/.cache/runqemuCache`. To force redetecting, pass `-n`.
 
 
 ```
 runqemu # run the simulation 
 runqemu -g # run simulation, opening port for gdb. Auto selects an available port
 runqemu <port-number> # try to use the provided port number
+runqemu -n # try to find the image and rootfs file and overriding the cache.
 runqemu -h # for help
 ```
 
