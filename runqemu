@@ -146,6 +146,7 @@ fi
 
 if [ $# -eq 0 ]; then
 	qemu_NoPort
+	exit 0
 fi
 
 while [ $# -gt 0 ]; do
@@ -172,6 +173,8 @@ done
 
 if [[ -n $RUN_QEMU_PORT ]]; then
 	qemu_Port
+	exit 0
 else 
 	qemu_NoPort
+	exit 0
 fi
