@@ -1,11 +1,13 @@
 # Set up for dice Machine UoE
 
+This script is being actively developped. To update, `git pull` and `source init.bash`.
+
 The scripts in this repo are designed to run on dice machine. See [tips](#access-dice) on vpn and access to dice machine.
 
 To set up environment, clone the repo and run
 
 ```bash
-source init.bash
+source init.bash # also use this to update the script
 ```
 
 Or use this oneliner: 
