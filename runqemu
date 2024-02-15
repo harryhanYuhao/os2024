@@ -76,7 +76,7 @@ get_filePath() {
 	fi
 }
 
-qemu_NoPort () {
+Qemu_No_Port () {
 	# it set ROOTFS_PATH and BZIMAGE_PATH 
 	get_filePath	
 
@@ -87,29 +87,30 @@ qemu_NoPort () {
 }
 
 Random_Port_Num(){
-	return $(($RANDOM % 63511 + 2024))
+	PORT_NUM=$(($RANDOM % 63510 + 2024))
 }
 
-qemu_Port(){
-
+Get_Port_Num(){
 	if [[ -z $PORT_NUM ]]; then
 		Random_Port_Num
-		PORT_NUM=$?
 	elif [[ $PORT_NUM -lt 2024 ]]; then
 		echo "you shall use a port number greater than 2024, auto-assigning port number "
 		Random_Port_Num
-		PORT_NUM=$?
 	elif [[ $PORT_NUM -gt 65535 ]]; then
 		echo "Port number shall be smaller then 65535. Auto-assigning a port number"
 		Random_Port_Num
-		PORT_NUM=$?
 	fi
 
 	# get an available port 
 	while [[ -n $(lsof -i:${PORT_NUM}) ]]; do
 		echo "trying port number ${PORT_NUM} ..."
-		PORT_NUM=`expr $(($PORT_NUM + 1)) % 65535`
+		Random_Port_Num
 	done
+}
+
+Qemu_Port(){
+	# sets the $PORT_NUM variable
+	Get_Port_Num
 	
 	# it set ROOTFS_PATH and BZIMAGE_PATH 
 	get_filePath
@@ -129,7 +130,7 @@ qemu_Port(){
 		-S -gdb tcp::${PORT_NUM}
 }
 
-help () {
+Help () {
 	echo "NAME"
 	echo "		runqemu - a qemu shortcut"
 	echo ""
@@ -172,14 +173,14 @@ while [ $# -gt 0 ]; do
 			shift
 			;;
 		*)
-			help
+			Help
 			exit 1
 			;;
 	esac
 done
 
 if [[ -n $RUN_QEMU_PORT ]]; then
-	qemu_Port
+	Qemu_Port
 else 
-	qemu_NoPort
+	Qemu_No_Port
 fi
