@@ -9,6 +9,9 @@ CACHEFILEDIR="$HOME/.cache/"
 CACHE_ROOTFS_PREFIX="ROOTFS_PATH="
 CACHE_BZIMAGE_PREFIX="BZIMAGE_PATH="
 
+ROOTFS_PATH=""
+BZIMAGE_PATH=""
+
 record_pathName() {
 	if [[ -f $CACHEFILEPATH ]]; then
 		rm $CACHEFILEPATH
@@ -35,16 +38,18 @@ get_filePath() {
 		[ -f $BZIMAGE_PATH ] || unset BZIMAGE_PATH
 	fi
 
-	[ -z $ROOTFS_PATH ] && ROOTFS_PATH=$(find ~ /disk/scratch/`whoami` /disk/scratch/operating_systems/`whoami` -name 'Yesterday' -prune -o -name "debian.qcow2" -print | tail -n 1)
-	[ -z $BZIMAGE_PAH ] && BZIMAGE_PATH=$(find ~ /disk/scratch/`whoami` /disk/scratch/operating_systems/`whoami` -name 'Yesterday' -prune -o -wholename "*x86_64*bzImage" -print | tail -n 1)
-	
+	if [[ -z $ROOTFS_PATH ]] || [[ -z $BZIMAGE_PATH]]; then
+		ROOTFS_PATH=$(find ~ /disk/scratch/`whoami` /disk/scratch/operating_systems/`whoami` -name 'Yesterday' -prune -o -name "debian.qcow2" -print | tail -n 1)
+		BZIMAGE_PATH=$(find ~ /disk/scratch/`whoami` /disk/scratch/operating_systems/`whoami` -name 'Yesterday' -prune -o -wholename "*x86_64*bzImage" -print | tail -n 1)
+		record_pathName
+	fi
 
-	if [[ -z $ROOTFS_PATH ]] && [[ -f $ROOTFS_PATH ]]; then
+	if [[ -z $ROOTFS_PATH ]] || [[ ! -f $ROOTFS_PATH ]]; then
 		echo "debian.qcow2 not found"
 		NOTFOUND_IMG=1
 	fi
 
-	if [[ -z $BZIMAGE_PATH ]] && [[ -z $BZIMAGE_PATH ]]; then
+	if [[ -z $BZIMAGE_PATH ]] || [[ ! -f $BZIMAGE_PATH ]]; then
 		echo "bzImage not found"
 		NOTFOUND_IMG=1
 	fi
@@ -53,8 +58,6 @@ get_filePath() {
 		echo "You should probably cd to /disk/scratch/<uun>?"
 		exit 1
 	fi
-
-	record_pathName
 
 	echo ""
 	echo "#######################"
@@ -68,13 +71,13 @@ get_filePath() {
 	echo "CONTINUE? Press enter to Continue, N to quit"
 	
 	read -r input 
-
 	if [[ $input == "N" ]]; then
 		exit 0
 	fi
 }
 
 qemu_NoPort () {
+	# it set ROOTFS_PATH and BZIMAGE_PATH 
 	get_filePath	
 
 	qemu-system-x86_64 -m 4G -smp 4 \
@@ -83,40 +86,47 @@ qemu_NoPort () {
 	       	-append "root=/dev/sda1 console=ttyS0" -nographic
 }
 
+Random_Port_Num(){
+	return $(($RANDOM % 63511 + 2024))
+}
+
 qemu_Port(){
 
-	randNum=$(($RANDOM % 65535))
-	if [[ -z $portNum ]]; then
-		portNum=$randNum
-	elif [[ $portNum -lt 2024 ]]; then
+	if [[ -z $PORT_NUM ]]; then
+		Random_Port_Num
+		PORT_NUM=$?
+	elif [[ $PORT_NUM -lt 2024 ]]; then
 		echo "you shall use a port number greater than 2024, auto-assigning port number "
-		portNum=$randNum
-	elif [[ $portNum -gt 65535 ]]; then
+		Random_Port_Num
+		PORT_NUM=$?
+	elif [[ $PORT_NUM -gt 65535 ]]; then
 		echo "Port number shall be smaller then 65535. Auto-assigning a port number"
-		portNum=$randNum
+		Random_Port_Num
+		PORT_NUM=$?
 	fi
-	
+
 	# get an available port 
-	while [[ -n $(lsof -i:${portNum}) ]]; do
-		echo "trying port number ${portNum} ..."
-		portNum=`expr $(($portNum + 1)) % 65535`
+	while [[ -n $(lsof -i:${PORT_NUM}) ]]; do
+		echo "trying port number ${PORT_NUM} ..."
+		PORT_NUM=`expr $(($PORT_NUM + 1)) % 65535`
 	done
 	
+	# it set ROOTFS_PATH and BZIMAGE_PATH 
 	get_filePath
 
 	echo "	qemu-system-x86_64 -m 4G -smp 4 \ "
 	echo "		-drive file=$ROOTFS_PATH \ "
 	echo "	       	-kernel $BZIMAGE_PATH \ "
 	echo "	       	-append "root=/dev/sda1 console=ttyS0" -nographic \ "
-	echo "		-S -gdb tcp::${portNum} "
+	echo "		-S -gdb tcp::${PORT_NUM} "
 
-	echo -e "port number assigned: \033[1;31m ${portNum} \033[0m"
+	echo -e "port number assigned: \033[1;31m ${PORT_NUM} \033[0m"
 
 	qemu-system-x86_64 -m 4G -smp 4 \
 		-drive file=$ROOTFS_PATH \
 	       	-kernel $BZIMAGE_PATH \
 	       	-append "root=/dev/sda1 console=ttyS0" -nographic \
-		-S -gdb tcp::${portNum}
+		-S -gdb tcp::${PORT_NUM}
 }
 
 help () {
@@ -124,7 +134,7 @@ help () {
 	echo "		runqemu - a qemu shortcut"
 	echo ""
 	echo "SYNOPSIS"
-	echo "		runqemu [-g] [port number]"
+	echo "		runqemu [-gn] [port number]"
 	echo ""
 	echo "DESCRIPTION"
 	echo "		runqemu is written for UoE operation system class"
@@ -137,6 +147,9 @@ help () {
 	echo ""
 	echo "-g: "
 	echo "		connects with gdb. Auto assign a port"		
+	echo "-n: "
+	echo "		not use cache: find the path of rootfs and "
+	echo "		rootfs again"
 }
 
 ################
@@ -155,7 +168,7 @@ while [ $# -gt 0 ]; do
 			;;
 		[0-9]*)
 			RUN_QEMU_PORT="yes"
-			portNum=$1
+			PORT_NUM=$1
 			shift
 			;;
 		*)
