@@ -13,7 +13,7 @@ CACHE_BZIMAGE_PREFIX="BZIMAGE_PATH="
 ROOTFS_PATH=""
 BZIMAGE_PATH=""
 
-SEARCH_PATH="~ /disk/scratch/`whoami` /disk/scratch/operating_systems/`whoami`"
+SEARCH_PATH="`echo ~` `echo ~+` /disk/scratch/`whoami` /disk/scratch/operating_systems/`whoami`"
 
 record_pathName() {
 	if [[ -f $CACHEFILEPATH ]]; then
@@ -67,7 +67,7 @@ get_filePath() {
 
 	if [[ -z $ROOTFS_PATH ]] || [[ -z $BZIMAGE_PATH ]]; then
 		echo "Trying to find ROOTFS_PATH"
-		ROOTFS_PATH=$(find ${SEARCH_PATH} -name 'Yesterday' -prune -o -name "debian.qcow2" -print | tail -n 1)
+		ROOTFS_PATH=$(find `echo ${SEARCH_PATH}` -name 'Yesterday' -prune -o -name "debian.qcow2" -print | tail -n 1)
 		echo "Trying to find BZIMAGE_PATH"
 		BZIMAGE_PATH=$(find ${SEARCH_PATH} -name 'Yesterday' -prune -o -wholename "*x86_64*bzImage" -print | tail -n 1)
 		record_pathName
