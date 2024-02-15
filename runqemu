@@ -38,7 +38,7 @@ get_filePath() {
 		[ -f $BZIMAGE_PATH ] || unset BZIMAGE_PATH
 	fi
 
-	if [[ -z $ROOTFS_PATH ]] || [[ -z $BZIMAGE_PATH]]; then
+	if [[ -z $ROOTFS_PATH ]] || [[ -z $BZIMAGE_PATH ]]; then
 		ROOTFS_PATH=$(find ~ /disk/scratch/`whoami` /disk/scratch/operating_systems/`whoami` -name 'Yesterday' -prune -o -name "debian.qcow2" -print | tail -n 1)
 		BZIMAGE_PATH=$(find ~ /disk/scratch/`whoami` /disk/scratch/operating_systems/`whoami` -name 'Yesterday' -prune -o -wholename "*x86_64*bzImage" -print | tail -n 1)
 		record_pathName
