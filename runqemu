@@ -2,7 +2,7 @@
 
 BOLD="\033[1m"
 RED="\033[31m"
-EMPH="${RED} ${BOLD}"
+EMPH="${RED}${BOLD}"
 RESET="\033[0m"
 
 CACHEFILEPATH="$HOME/.cache/runqemuCache"
@@ -148,6 +148,9 @@ Qemu_Port(){
 	echo "		-S -gdb tcp::${PORT_NUM} "
 
 	echo -e "port number assigned: ${EMPH} ${PORT_NUM} ${RESET}"
+	echo "Waiting for gdb..."
+	echo "Help on GDB: gdb vmlinux"
+	echo "(gdb) target remote localhost:${PORT_NUM}"
 	
 
 	qemu-system-x86_64 -m 4G -smp 4 \
