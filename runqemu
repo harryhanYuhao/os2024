@@ -2,6 +2,7 @@
 
 BOLD="\033[1m"
 RED="\033[31m"
+EMPH="${RED} ${BOLD}"
 RESET="\033[0m"
 
 CACHEFILEPATH="$HOME/.cache/runqemuCache"
@@ -21,25 +22,51 @@ record_pathName() {
 		mkdir -p $CACHEFILEDIR
 	fi
 
+	if [[ -z $ROOTFS_PATH ]]; then
+		echo "ROOTFS_PATH Not defined!"
+		echo "It is probably a bug with the script"
+		exit 1
+	fi
+
+	if [[ -z $BZIMAGE_PATH ]]; then
+		echo "BZIMAGE_PATH Not defined!"
+		echo "It is probably a bug with the script"
+		exit 1
+	fi
+
 	echo "${CACHE_ROOTFS_PREFIX}${ROOTFS_PATH}" >> $CACHEFILEPATH
 	echo "${CACHE_BZIMAGE_PREFIX}${BZIMAGE_PATH}" >> $CACHEFILEPATH
 	echo "Recording filepath to $CACHEFILEPATH"
-	cat $CACHEFILEPATH
 }
 
 get_filePath() {
 	if [[ -f $CACHEFILEPATH ]] && [[ -z $NOT_USE_CACHE ]]; then
 		ROOTFS_PATH=$(cat $CACHEFILEPATH | grep $CACHE_ROOTFS_PREFIX | sed "s/^${CACHE_ROOTFS_PREFIX}//") 
 		BZIMAGE_PATH=$(cat $CACHEFILEPATH | grep $CACHE_BZIMAGE_PREFIX | sed "s/^${CACHE_BZIMAGE_PREFIX}//") 
-		echo "Found filepath from $CACHEFILEPATH"
-		echo "Rootfs: $ROOTFS_PATH"
-		echo "Bzimage: $BZIMAGE_PATH"
-		[ -f $ROOTFS_PATH ] || unset ROOTFS_PATH
-		[ -f $BZIMAGE_PATH ] || unset BZIMAGE_PATH
+
+		if [[ -n $ROOTFS_PATH ]] || [[ -n $BZIMAGE_PATH ]]; then
+			echo "Found filepath from $CACHEFILEPATH"
+		fi
+
+		if [[ -f $ROOTFS_PATH ]]; then
+			echo "Rootfs: $ROOTFS_PATH"
+		else
+			echo -e "$ROOTFS_PATH is ${EMPH}not a file! ${RESET}}"
+			unset ROOTFS_PATH
+		fi
+		if [[ -f $BZIMAGE_PATH ]]; then
+			echo "Bzimage: $BZIMAGE_PATH"
+		else
+			echo -e "$BZIMAGE_PATH is ${EMPH}not a file! ${RESET}}"
+			unset BZIMAGE_PATH
+		fi
+
 	fi
 
 	if [[ -z $ROOTFS_PATH ]] || [[ -z $BZIMAGE_PATH ]]; then
+		echo "Trying to find ROOTFS_PATH"
 		ROOTFS_PATH=$(find ~ /disk/scratch/`whoami` /disk/scratch/operating_systems/`whoami` -name 'Yesterday' -prune -o -name "debian.qcow2" -print | tail -n 1)
+		echo "Trying to find BZIMAGE_PATH"
 		BZIMAGE_PATH=$(find ~ /disk/scratch/`whoami` /disk/scratch/operating_systems/`whoami` -name 'Yesterday' -prune -o -wholename "*x86_64*bzImage" -print | tail -n 1)
 		record_pathName
 	fi
@@ -62,9 +89,9 @@ get_filePath() {
 	echo ""
 	echo "#######################"
 	echo ""
-	echo -e "${BOLD}${RED}Found: ${RESET}" 
+	echo -e "${EMPH}Found: ${RESET}" 
 	echo "${BZIMAGE_PATH}"
-	echo -e "${BOLD}${RED}Found: ${RESET}" 
+	echo -e "${EMPH}Found: ${RESET}" 
 	echo "${ROOTFS_PATH}"
 	echo ""
 	
@@ -111,7 +138,6 @@ Get_Port_Num(){
 Qemu_Port(){
 	# sets the $PORT_NUM variable
 	Get_Port_Num
-	
 	# it set ROOTFS_PATH and BZIMAGE_PATH 
 	get_filePath
 
@@ -121,7 +147,8 @@ Qemu_Port(){
 	echo "	       	-append "root=/dev/sda1 console=ttyS0" -nographic \ "
 	echo "		-S -gdb tcp::${PORT_NUM} "
 
-	echo -e "port number assigned: \033[1;31m ${PORT_NUM} \033[0m"
+	echo -e "port number assigned: ${EMPH} ${PORT_NUM} ${RESET}"
+	
 
 	qemu-system-x86_64 -m 4G -smp 4 \
 		-drive file=$ROOTFS_PATH \
